@@ -157,7 +157,7 @@ ALSO = [
     (28, "Taipei", "Budget and payout passed", "Taipei Times"),
     (29, "Bangkok", "Arsenic plan for two rivers", "The Nation"),
     (30, "New Delhi", "Pakistani minister at SCO", "Dawn"),
-    (31, "Eastern India", "Rain alerts as Yakvan moves in", "ETV"),
+    (31, "Eastern India", "Rain alerts as Akvan moves in", "ETV"),
     (32, "Myanmar", "Sanctions urged after ruling", "AP"),
     (33, "Port Louis", "Rating agency meets 15 states", "Al Jazeera"),
     (34, "Melbourne", "Cummins keeps captaincy", "ABC"),
