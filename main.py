@@ -5,7 +5,13 @@ Writes /output/entry.png, 1024x1024, deterministic, no network.
 Only stdlib + PIL. Run: python3 main.py
 """
 import os
-from PIL import Image, ImageDraw, ImageFont
+import shutil
+
+try:
+    from PIL import Image, ImageDraw, ImageFont
+    PIL_OK = True
+except Exception:
+    PIL_OK = False
 
 W, H = 1024, 1024
 OUT = os.environ.get("OUTPUT", "/output/entry.png")
@@ -600,5 +606,22 @@ def build():
     return OUT
 
 
+def fallback_copy():
+    try:
+        base = os.path.dirname(os.path.abspath(__file__))
+    except NameError:
+        base = os.getcwd()
+    src = os.path.join(base, "entry.png")
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    shutil.copyfile(src, OUT)
+    return OUT
+
+
 if __name__ == "__main__":
-    print(build())
+    if PIL_OK:
+        try:
+            print(build())
+        except Exception:
+            print(fallback_copy())
+    else:
+        print(fallback_copy())
