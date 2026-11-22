@@ -94,6 +94,7 @@ HEROES = [
         "deck": "COP31 missed its Friday close. A draft with no mention of fossil fuels split nearly 200 countries; a third text is promised.",
         "source": "(AFP, Al Jazeera)",
         "art": "cop31",
+        "art_label": "+1.5C LIMIT AT RISK",
         "badge": "REPORTED",
     },
     {
@@ -106,6 +107,7 @@ HEROES = [
         "deck": "The Saudi-led coalition said three were destroyed over Riyadh before dawn and two over Jizan, a day after it bombed Hodeidah port.",
         "source": "(AFP, Dawn)",
         "art": "saudi",
+        "art_label": "5 SHOT DOWN, RIYADH AND JIZAN",
         "badge": "REPORTED",
     },
     {
@@ -118,6 +120,7 @@ HEROES = [
         "deck": "The deep quake near Carhuamayo was felt in Lima and along the coast. Peru's institute reported no deaths, damage or tsunami risk.",
         "source": "(USGS, IGP)",
         "art": "peru",
+        "art_label": "00:09 UTC, M6.7",
         "badge": "OFFICIAL",
     },
 ]
@@ -286,84 +289,123 @@ def art_peru(d, x, y, w, h):
     pts.append((x + w - 88, mid))
     d.line(pts, fill=(185, 28, 28), width=3, joint="curve")
     hx = x + w - 78
-    hy = y + h - 52
+    hy = y + h - 20
     d.polygon([(hx, hy - 16), (hx + 52, hy - 16), (hx + 26, hy - 34)], fill=(146, 64, 14))
     d.rectangle([hx + 4, hy - 16, hx + 48, hy + 14], fill=(217, 180, 130), outline=(120, 85, 40), width=1)
     d.rectangle([hx + 21, hy - 2, hx + 31, hy + 14], fill=(90, 60, 30))
-    d.line([x + 8, y + h - 8, x + w - 8, y + h - 8], fill=(180, 168, 138), width=1)
+    d.line([x + 8, y + h - 4, x + w - 8, y + h - 4], fill=(180, 168, 138), width=1)
 
 
 def draw_badge(d, x_right, y, kind):
-    """Tiny attribution pill, right edge at x_right, top at y. Returns left edge."""
-    fnt = font(SANS_B, 7)
+    """Attribution pill, right edge at x_right, top at y. Returns left edge."""
+    fnt = font(SANS_B, 8)
     tw = int(fnt.getlength(kind))
-    pad = 3
+    pad = 4
     w = tw + pad * 2
-    h = 13
+    h = 15
     x0 = int(x_right - w)
-    d.rounded_rectangle([x0, y, x_right, y + h], radius=6, fill=BADGE_FILL[kind])
-    d.text((x0 + pad, y + 2), kind, font=fnt, fill=BADGE_TEXT[kind])
+    d.rounded_rectangle([x0, y, x_right, y + h], radius=7, fill=BADGE_FILL[kind])
+    d.text((x0 + pad, y + 3), kind, font=fnt, fill=BADGE_TEXT[kind])
     return x0
 
 
-def draw_grid_picto(d, num, bx, by):
-    """Small 20x12 pictogram for a grid story, top-left at (bx, by)."""
+def draw_grid_art(d, num, x, y, w, h):
+    """Full-width coloured illustration band for a grid story, top-left at (x, y), size w x h."""
     if num == "4":
         # bridge arc over water
-        d.arc([bx + 1, by - 2, bx + 19, by + 10], start=180, end=360, fill=INK, width=2)
-        d.line([bx + 1, by + 11, bx + 19, by + 11], fill=(29, 78, 216), width=1)
-        d.line([bx + 5, by + 5, bx + 5, by + 11], fill=INK, width=1)
-        d.line([bx + 15, by + 5, bx + 15, by + 11], fill=INK, width=1)
+        d.rectangle([x, y, x + w - 1, y + h - 1], fill=(203, 225, 240))
+        d.rectangle([x, y + h - 8, x + w - 1, y + h - 1], fill=(29, 78, 216))
+        d.arc([x + 20, y - 2, x + w - 20, y + 22], start=180, end=360, fill=(185, 28, 28), width=3)
+        d.line([x + 20, y + 14, x + w - 20, y + 14], fill=INK, width=2)
+        for px in (x + 45, x + 94, x + 143):
+            d.line([px, y + 8, px, y + 14], fill=INK, width=2)
     elif num == "5":
-        # ship hull + drone dot
-        d.polygon([(bx + 2, by + 7), (bx + 18, by + 7), (bx + 15, by + 11), (bx + 5, by + 11)], fill=(30, 42, 74))
-        d.line([bx + 10, by + 2, bx + 10, by + 7], fill=(30, 42, 74), width=1)
-        d.ellipse([bx + 15, by + 1, bx + 18, by + 4], fill=(185, 28, 28))
+        # ship hull on a dark sea + drone above
+        d.rectangle([x, y, x + w - 1, y + h - 1], fill=(30, 42, 74))
+        d.polygon([(x + 30, y + 13), (x + 130, y + 13), (x + 118, y + 21), (x + 42, y + 21)],
+                  fill=(226, 232, 240))
+        d.rectangle([x + 70, y + 5, x + 90, y + 13], fill=(226, 232, 240))
+        d.line([x + 80, y + 2, x + 80, y + 5], fill=(226, 232, 240), width=2)
+        d.ellipse([x + 150, y + 3, x + 158, y + 11], fill=(220, 38, 38))
+        d.line([x + 140, y + 7, x + 150, y + 7], fill=(250, 204, 21), width=1)
+        d.line([x + 158, y + 7, x + 168, y + 7], fill=(250, 204, 21), width=1)
     elif num == "6":
-        # atom: ellipse orbit + nucleus
-        d.ellipse([bx + 2, by + 1, bx + 18, by + 11], outline=(29, 78, 216), width=1)
-        d.line([bx + 3, by + 9, bx + 17, by + 3], fill=(29, 78, 216), width=1)
-        d.ellipse([bx + 8, by + 4, bx + 12, by + 8], fill=(185, 28, 28))
+        # atom: orbit ellipse + nucleus
+        d.rectangle([x, y, x + w - 1, y + h - 1], fill=(254, 243, 199))
+        cx, cy = x + w // 2, y + h // 2
+        d.ellipse([cx - 34, cy - 9, cx + 34, cy + 9], outline=(29, 78, 216), width=2)
+        d.line([cx - 30, cy + 7, cx + 30, cy - 7], fill=(29, 78, 216), width=2)
+        d.line([cx - 30, cy - 7, cx + 30, cy + 7], fill=(29, 78, 216), width=2)
+        d.ellipse([cx - 5, cy - 5, cx + 5, cy + 5], fill=(185, 28, 28))
     elif num == "7":
-        # chip square with pins
-        d.rectangle([bx + 5, by + 2, bx + 15, by + 10], outline=INK, width=1)
-        for px in (7, 10, 13):
-            d.line([bx + px, by, bx + px, by + 2], fill=INK, width=1)
-            d.line([bx + px, by + 10, bx + px, by + 12], fill=INK, width=1)
-        d.ellipse([bx + 8, by + 5, bx + 12, by + 9], fill=(185, 28, 28))
+        # data centre: chip + server racks
+        d.rectangle([x, y, x + w - 1, y + h - 1], fill=(226, 232, 240))
+        d.rectangle([x + 40, y + 3, x + 64, y + h - 4], outline=INK, width=2)
+        d.rectangle([x + 46, y + 8, x + 58, y + h - 9], fill=(185, 28, 28))
+        for px in (x + 46, x + 52, x + 58):
+            d.line([px, y + 1, px, y + 3], fill=INK, width=1)
+            d.line([px, y + h - 3, px, y + h - 1], fill=INK, width=1)
+        for rx in (x + 140, x + 158, x + 176):
+            d.rectangle([rx, y + 3, rx + 10, y + h - 4], fill=(30, 42, 74))
+            for ry in range(y + 6, y + h - 6, 5):
+                d.rectangle([rx + 2, ry, rx + 8, ry + 2], fill=(34, 197, 94))
     elif num == "8":
-        # two flag bars: China red, Japan white with red dot
-        d.rectangle([bx + 1, by + 2, bx + 9, by + 10], fill=(185, 28, 28))
-        d.rectangle([bx + 11, by + 2, bx + 19, by + 10], fill=(255, 255, 255), outline=(150, 150, 150), width=1)
-        d.ellipse([bx + 13, by + 4, bx + 17, by + 8], fill=(185, 28, 28))
+        # two flags: China red with stars, Japan white with red disc
+        d.rectangle([x, y, x + w // 2 - 1, y + h - 1], fill=(185, 28, 28))
+        draw_star(d, x + 18, y + 7, 5, (250, 204, 21))
+        draw_star(d, x + 32, y + 5, 3, (250, 204, 21))
+        draw_star(d, x + 34, y + 12, 3, (250, 204, 21))
+        d.rectangle([x + w // 2, y, x + w - 1, y + h - 1], fill=(255, 255, 255))
+        d.ellipse([x + w // 2 + 28, y + 4, x + w // 2 + 58, y + h - 5], fill=(185, 28, 28))
+        d.line([x + w // 2, y, x + w // 2, y + h - 1], fill=(150, 150, 150), width=1)
     elif num == "9":
-        # airplane silhouette
-        d.polygon([(bx + 1, by + 7), (bx + 14, by + 4), (bx + 19, by + 4), (bx + 15, by + 7),
-                   (bx + 18, by + 9), (bx + 8, by + 9), (bx + 5, by + 11), (bx + 3, by + 9)],
-                  fill=(30, 42, 74))
+        # jet in the sky over a runway strip
+        d.rectangle([x, y, x + w - 1, y + h - 1], fill=(191, 219, 254))
+        d.rectangle([x, y + h - 6, x + w - 1, y + h - 1], fill=(34, 197, 94))
+        d.polygon([(x + 30, y + 13), (x + 110, y + 6), (x + 150, y + 6), (x + 132, y + 13),
+                   (x + 148, y + 17), (x + 80, y + 17), (x + 70, y + 21), (x + 58, y + 17)],
+                  fill=(255, 255, 255), outline=(30, 42, 74))
+        d.ellipse([x + 118, y + 8, x + 124, y + 12], fill=(30, 42, 74))
     elif num == "10":
-        # two flag bars: Australia blue, China red
-        d.rectangle([bx + 1, by + 2, bx + 9, by + 10], fill=(29, 78, 216))
-        d.ellipse([bx + 3, by + 4, bx + 7, by + 8], fill=(255, 255, 255))
-        d.rectangle([bx + 11, by + 2, bx + 19, by + 10], fill=(185, 28, 28))
-        d.ellipse([bx + 13, by + 4, bx + 16, by + 7], fill=(250, 204, 21))
+        # two flags: Australia blue with stars, China red with one star
+        d.rectangle([x, y, x + w // 2 - 1, y + h - 1], fill=(29, 78, 216))
+        draw_star(d, x + 22, y + 12, 7, (255, 255, 255))
+        draw_star(d, x + 48, y + 6, 4, (255, 255, 255))
+        draw_star(d, x + 52, y + 17, 4, (255, 255, 255))
+        d.rectangle([x + w // 2, y, x + w - 1, y + h - 1], fill=(185, 28, 28))
+        draw_star(d, x + w // 2 + 28, y + 12, 8, (250, 204, 21))
+        d.line([x + w // 2, y, x + w // 2, y + h - 1], fill=(150, 150, 150), width=1)
     elif num == "11":
-        # falling chart line
-        d.line([(bx + 1, by + 2), (bx + 7, by + 4), (bx + 13, by + 8), (bx + 19, by + 10)],
-               fill=(185, 28, 28), width=2, joint="curve")
-        d.ellipse([bx + 17, by + 8, bx + 20, by + 11], fill=(185, 28, 28))
+        # bitcoin coin + falling chart line
+        d.rectangle([x, y, x + w - 1, y + h - 1], fill=(255, 255, 255))
+        d.line([(x + 40, y + 4), (x + 80, y + 8), (x + 120, y + 14), (x + 160, y + 20)],
+               fill=(185, 28, 28), width=3, joint="curve")
+        d.polygon([(x + 160, y + 20), (x + 152, y + 16), (x + 170, y + 14)], fill=(185, 28, 28))
+        d.ellipse([x + 4, y + 3, x + 28, y + 21], fill=(247, 147, 26))
+        d.text((x + 11, y + 6), "B", font=font(SANS_B, 13), fill=(255, 255, 255))
     elif num == "12":
-        # checkered flag
-        d.line([bx + 2, by + 1, bx + 2, by + 11], fill=INK, width=1)
-        for r in range(3):
-            for c in range(3):
+        # checkered flag on a pole + race car
+        d.rectangle([x, y, x + w - 1, y + h - 1], fill=(226, 232, 240))
+        d.line([x + 8, y + 3, x + 8, y + 22], fill=INK, width=2)
+        for r in range(2):
+            for c in range(4):
                 if (r + c) % 2 == 0:
-                    d.rectangle([bx + 3 + c * 5, by + 1 + r * 3, bx + 7 + c * 5, by + 3 + r * 3], fill=INK)
-        d.rectangle([bx + 3, by + 1, bx + 18, by + 10], outline=INK, width=1)
+                    d.rectangle([x + 10 + c * 5, y + 3 + r * 5, x + 14 + c * 5, y + 7 + r * 5], fill=INK)
+        d.rectangle([x + 10, y + 3, x + 29, y + 12], outline=INK, width=1)
+        d.polygon([(x + 45, y + 17), (x + 65, y + 13), (x + 115, y + 13), (x + 145, y + 17),
+                   (x + 155, y + 20), (x + 145, y + 22), (x + 55, y + 22)], fill=(185, 28, 28))
+        d.rectangle([x + 83, y + 9, x + 109, y + 13], fill=(30, 42, 74))
+        d.ellipse([x + 63, y + 19, x + 75, y + 23], fill=INK)
+        d.ellipse([x + 125, y + 19, x + 137, y + 23], fill=INK)
     elif num == "13":
-        # cricket bat + ball
-        d.line([bx + 3, by + 11, bx + 14, by + 2], fill=(146, 64, 14), width=3)
-        d.ellipse([bx + 15, by + 8, bx + 19, by + 12], fill=(185, 28, 28))
+        # cricket pitch: bat, ball and stumps
+        d.rectangle([x, y, x + w - 1, y + h - 1], fill=(187, 247, 208))
+        d.rectangle([x, y + h - 7, x + w - 1, y + h - 1], fill=(134, 239, 172))
+        for sx in (x + 150, x + 156, x + 162):
+            d.line([sx, y + 6, sx, y + 18], fill=(250, 204, 21), width=2)
+        d.line([x + 150, y + 5, x + 163, y + 5], fill=(250, 204, 21), width=2)
+        d.line([x + 40, y + 21, x + 95, y + 4], fill=(146, 64, 14), width=5)
+        d.ellipse([x + 108, y + 12, x + 120, y + 22], fill=(185, 28, 28))
 
 
 # ---------------------------------------------------------------- build
@@ -385,7 +427,7 @@ def build():
     y += 22
 
     # masthead, auto fit
-    size = 60
+    size = 56
     f_head = font(SERIF_B, size)
     while text_w("Saturday 21 November 2026", f_head) > CW and size > 40:
         size -= 2
@@ -397,25 +439,25 @@ def build():
     f_sub = font(SERIF_I, 16)
     sub = "Climate summit runs past its deadline · Five missiles shot down over Saudi Arabia · Strong quake shakes Peru"
     d.text(((W - text_w(sub, f_sub)) / 2, y), sub, font=f_sub, fill=INK)
-    y += 24
+    y += 22
     d.line([MX, y, MX + CW, y], fill=INK, width=2)
     y += 6
 
     # stat strip
     col_w = CW / 6
-    f_num = font(SANS_B, 27)
+    f_num = font(SANS_B, 24)
     f_lab = font(SANS, 10)
     stat_top = y
     for i, (num, lab) in enumerate(STATS):
         cx = MX + i * col_w
         d.text((cx + 4, y), num, font=f_num, fill=INK)
-        ly = y + 33
+        ly = y + 30
         for ln in wrap(lab, f_lab, col_w - 12):
             d.text((cx + 4, ly), ln, font=f_lab, fill=GRAY)
-            ly += 12
+            ly += 11
         if i > 0:
-            d.line([cx, y + 2, cx, y + 52], fill=LIGHT_LINE, width=1)
-    y = stat_top + 58
+            d.line([cx, y + 2, cx, y + 50], fill=LIGHT_LINE, width=1)
+    y = stat_top + 52
     d.line([MX, y, MX + CW, y], fill=INK, width=1)
     y += 6
 
@@ -432,12 +474,12 @@ def build():
     # heroes
     hero_w = 320
     hero_gap = 10
-    hero_h = 232
+    hero_h = 234
     hero_top = y
     f_hlabel = font(SANS_B, 13)
     f_htag = font(SANS_B, 8)
     f_loc = font(SANS_B, 10)
-    f_hhead = font(SERIF_B, 17)
+    f_hhead = font(SERIF_B, 18)
     f_hdeck = font(SANS, 11)
     f_src = font(SANS, 9)
     for i, h in enumerate(HEROES):
@@ -450,15 +492,17 @@ def build():
         draw_badge(d, tag_left - 8, y + 5, h["badge"])
         ay = y + 23
         if h["art"] == "cop31":
-            art_cop31(d, hx, ay, hero_w, 88)
+            art_cop31(d, hx, ay, hero_w, 74)
         elif h["art"] == "saudi":
-            art_saudi(d, hx, ay, hero_w, 88)
+            art_saudi(d, hx, ay, hero_w, 74)
         else:
-            art_peru(d, hx, ay, hero_w, 88)
-        ty = ay + 88 + 6
+            art_peru(d, hx, ay, hero_w, 74)
+        d.rectangle([hx, ay + 74, hx + hero_w - 1, ay + 89], fill=h["loc_color"])
+        d.text((hx + 8, ay + 77), h["art_label"], font=font(SANS_B, 9), fill=(255, 255, 255))
+        ty = ay + 94
         d.text((hx, ty), str(h["num"]) + "  " + h["loc"], font=f_loc, fill=h["loc_color"])
         ty += 16
-        ty = draw_wrapped(d, hx, ty, h["headline"], f_hhead, hero_w, INK, leading=20)
+        ty = draw_wrapped(d, hx, ty, h["headline"], f_hhead, hero_w, INK, leading=21)
         ty += 2
         ty = draw_wrapped(d, hx, ty, h["deck"], f_hdeck, hero_w, INK, leading=14)
         ty += 3
@@ -470,7 +514,7 @@ def build():
     # grid, 2 rows x 5
     cell_w = 188
     cell_gap = 10
-    row_h = 108
+    row_h = 120
     f_glabel = font(SANS_B, 11)
     f_ghead = font(SERIF_B, 13)
     f_gdeck = font(SANS, 10)
@@ -484,8 +528,8 @@ def build():
             d.text((gx, gy), num + " · " + label, font=f_glabel, fill=RED_DARK)
             draw_badge(d, gx + cell_w, gy, badge)
             d.text((gx, gy + 15), loc, font=font(SANS_B, 8), fill=GRAY)
-            draw_grid_picto(d, num, gx + cell_w - 20, gy + 14)
-            hy = draw_wrapped(d, gx, gy + 28, head, f_ghead, cell_w, INK, leading=15)
+            draw_grid_art(d, num, gx, gy + 26, cell_w, 24)
+            hy = draw_wrapped(d, gx, gy + 52, head, f_ghead, cell_w, INK, leading=15)
             dy = draw_wrapped(d, gx, hy + 1, deck, f_gdeck, cell_w, INK, leading=12)
             d.text((gx, dy + 2), src, font=f_gsrc, fill=GRAY)
             if col < 4:
@@ -503,7 +547,7 @@ def build():
     d.text((MX + map_w + 12, y), "ALSO ON SATURDAY 21 NOVEMBER 2026 · 22 MORE STORIES", font=f_sec, fill=INK)
     y += 17
     map_x, map_y = MX, y
-    map_h = 173
+    map_h = 166
     d.rectangle([map_x, map_y, map_x + map_w - 1, map_y + map_h - 1], fill=MAP_OCEAN, outline=MAP_LINE, width=1)
 
     def proj(lon, lat):
@@ -543,15 +587,15 @@ def build():
             ly = yy
             for ln in lines:
                 d.text((ax + 22, ly), ln, font=f_also, fill=INK)
-                ly += 13
-            yy = max(ly, yy + 13)
-            yy += 2
+                ly += 12
+            yy = max(ly, yy + 12)
+            yy += 1
     y = sec_top + 17 + map_h + 22
     d.line([MX, y, MX + CW, y], fill=LIGHT_LINE, width=1)
     y += 6
 
     # date check box
-    box_h = 60
+    box_h = 56
     d.rectangle([MX, y, MX + CW - 1, y + box_h - 1], outline=RED, width=2)
     f_dc = font(SANS, 11)
     f_dc_b = font(SANS_B, 11)
@@ -579,7 +623,7 @@ def build():
         else:
             d.text((inner, ly), ln, font=f_dc, fill=INK)
         ly += 15
-    y += box_h + 6
+    y += box_h + 5
 
     # how we checked legend
     f_hwc_b = font(SANS_B, 9)
@@ -590,13 +634,13 @@ def build():
     lx0 = (W - lw) / 2
     d.text((lx0, y), prefix, font=f_hwc_b, fill=GRAY)
     d.text((lx0 + text_w(prefix, f_hwc_b), y), rest, font=f_hwc, fill=GRAY)
-    y += 14
+    y += 13
 
     # footer
     f_foot = font(SANS, 10)
     fw = text_w(FOOTER, f_foot)
     d.text(((W - fw) / 2, y), FOOTER, font=f_foot, fill=INK)
-    y += 15
+    y += 13
     f_foot2 = font(SANS, 9)
     fw2 = text_w(FOOTER2, f_foot2)
     d.text(((W - fw2) / 2, y), FOOTER2, font=f_foot2, fill=GRAY)
