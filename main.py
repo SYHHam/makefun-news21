@@ -23,6 +23,11 @@ MAP_OCEAN = (217, 230, 240)
 MAP_LAND = (229, 217, 184)
 MAP_LINE = (180, 168, 138)
 
+BADGE_FILL = {"OFFICIAL": (21, 101, 52), "REPORTED": (87, 83, 78), "CLAIM": (217, 119, 6)}
+BADGE_TEXT = {"OFFICIAL": (255, 255, 255), "REPORTED": (255, 255, 255), "CLAIM": (26, 26, 26)}
+HOW_CHECKED = ("HOW WE CHECKED: OFFICIAL means an official count or statement, REPORTED means news "
+                "reporting, CLAIM means one side's claim without confirmation. Sources named beside every story.")
+
 FONT_DIR = "/usr/share/fonts/truetype/dejavu"
 
 
@@ -83,6 +88,7 @@ HEROES = [
         "deck": "COP31 missed its Friday close. A draft with no mention of fossil fuels split nearly 200 countries; a third text is promised.",
         "source": "(AFP, Al Jazeera)",
         "art": "cop31",
+        "badge": "REPORTED",
     },
     {
         "num": 2,
@@ -94,6 +100,7 @@ HEROES = [
         "deck": "The Saudi-led coalition said three were destroyed over Riyadh before dawn and two over Jizan, a day after it bombed Hodeidah port.",
         "source": "(AFP, Dawn)",
         "art": "saudi",
+        "badge": "REPORTED",
     },
     {
         "num": 3,
@@ -105,30 +112,31 @@ HEROES = [
         "deck": "The deep quake near Carhuamayo was felt in Lima and along the coast. Peru's institute reported no deaths, damage or tsunami risk.",
         "source": "(USGS, IGP)",
         "art": "peru",
+        "badge": "OFFICIAL",
     },
 ]
 
 GRID = [
     ("4", "KYIV: WARNING", "KYIV · WAR", "Zelensky: Crimea bridge 'will not stay'",
-     "He warns of more double-tap strikes.", "Interview · NBC"),
+     "He warns of more double-tap strikes.", "Interview · NBC", "REPORTED"),
     ("5", "HORMUZ: DRONE", "STRAIT OF HORMUZ · WAR", "Iran says it shot down a US drone",
-     "No confirmation from Washington.", "Iran's claim · IRIB"),
+     "No confirmation from Washington.", "Iran's claim · IRIB", "CLAIM"),
     ("6", "IRAN: URANIUM", "TEHRAN · DIPLOMACY", "Iran: uranium stock stays in the country",
-     "Minister still seeks a 'fair solution'.", "Statement · Tol"),
+     "Minister still seeks a 'fair solution'.", "Statement · Tol", "OFFICIAL"),
     ("7", "TRUMP: AI TAX", "WASHINGTON · TECHNOLOGY", "Trump vows tax on data centres abroad",
-     "'Tremendous' penalty; no details yet.", "Briefing · ABC"),
+     "'Tremendous' penalty; no details yet.", "Briefing · ABC", "REPORTED"),
     ("8", "CHINA-JAPAN", "BEIJING · DIPLOMACY", "China tells Japan to 'correct' its Taiwan words",
-     "Tokyo says its stance is unchanged.", "Ministry · AFP"),
+     "Tokyo says its stance is unchanged.", "Ministry · AFP", "OFFICIAL"),
     ("9", "DAVAO: 146 SAFE", "DAVAO · AVIATION", "Jet lands safely after engine fire alert",
-     "Air Niugini 767 diverts after midnight.", "Airline · AP"),
+     "Air Niugini 767 diverts after midnight.", "Airline · AP", "OFFICIAL"),
     ("10", "CANBERRA: AI", "CANBERRA · DIPLOMACY", "Australia and China agree to AI talks",
-     "Albanese ends an 11-day trip.", "Agreed · ABC"),
+     "Albanese ends an 11-day trip.", "Agreed · ABC", "OFFICIAL"),
     ("11", "BITCOIN: $58,983", "WORLD · MARKETS", "Bitcoin trades below $59,000 on Saturday",
-     "Down 3.9% in 24 hours; ether $1,625.", "CoinGecko · 02:08 UTC"),
+     "Down 3.9% in 24 hours; ether $1,625.", "CoinGecko · 02:08 UTC", "OFFICIAL"),
     ("12", "RUSSELL: P1", "LAS VEGAS · FORMULA ONE", "Russell fastest in final Las Vegas practice",
-     "1:34.041 in a damp, messy session.", "Timing · Formula 1"),
+     "1:34.041 in a damp, messy session.", "Timing · Formula 1", "OFFICIAL"),
     ("13", "RAHUL: 124*", "WELLINGTON · CRICKET", "Rahul hits a century against New Zealand",
-     "India 344 for 2 at tea, replying to 368.", "Tea, day 3 · AFP"),
+     "India 344 for 2 at tea, replying to 368.", "Tea, day 3 · AFP", "REPORTED"),
 ]
 
 ALSO = [
@@ -279,6 +287,79 @@ def art_peru(d, x, y, w, h):
     d.line([x + 8, y + h - 8, x + w - 8, y + h - 8], fill=(180, 168, 138), width=1)
 
 
+def draw_badge(d, x_right, y, kind):
+    """Tiny attribution pill, right edge at x_right, top at y. Returns left edge."""
+    fnt = font(SANS_B, 7)
+    tw = int(fnt.getlength(kind))
+    pad = 3
+    w = tw + pad * 2
+    h = 13
+    x0 = int(x_right - w)
+    d.rounded_rectangle([x0, y, x_right, y + h], radius=6, fill=BADGE_FILL[kind])
+    d.text((x0 + pad, y + 2), kind, font=fnt, fill=BADGE_TEXT[kind])
+    return x0
+
+
+def draw_grid_picto(d, num, bx, by):
+    """Small 20x12 pictogram for a grid story, top-left at (bx, by)."""
+    if num == "4":
+        # bridge arc over water
+        d.arc([bx + 1, by - 2, bx + 19, by + 10], start=180, end=360, fill=INK, width=2)
+        d.line([bx + 1, by + 11, bx + 19, by + 11], fill=(29, 78, 216), width=1)
+        d.line([bx + 5, by + 5, bx + 5, by + 11], fill=INK, width=1)
+        d.line([bx + 15, by + 5, bx + 15, by + 11], fill=INK, width=1)
+    elif num == "5":
+        # ship hull + drone dot
+        d.polygon([(bx + 2, by + 7), (bx + 18, by + 7), (bx + 15, by + 11), (bx + 5, by + 11)], fill=(30, 42, 74))
+        d.line([bx + 10, by + 2, bx + 10, by + 7], fill=(30, 42, 74), width=1)
+        d.ellipse([bx + 15, by + 1, bx + 18, by + 4], fill=(185, 28, 28))
+    elif num == "6":
+        # atom: ellipse orbit + nucleus
+        d.ellipse([bx + 2, by + 1, bx + 18, by + 11], outline=(29, 78, 216), width=1)
+        d.line([bx + 3, by + 9, bx + 17, by + 3], fill=(29, 78, 216), width=1)
+        d.ellipse([bx + 8, by + 4, bx + 12, by + 8], fill=(185, 28, 28))
+    elif num == "7":
+        # chip square with pins
+        d.rectangle([bx + 5, by + 2, bx + 15, by + 10], outline=INK, width=1)
+        for px in (7, 10, 13):
+            d.line([bx + px, by, bx + px, by + 2], fill=INK, width=1)
+            d.line([bx + px, by + 10, bx + px, by + 12], fill=INK, width=1)
+        d.ellipse([bx + 8, by + 5, bx + 12, by + 9], fill=(185, 28, 28))
+    elif num == "8":
+        # two flag bars: China red, Japan white with red dot
+        d.rectangle([bx + 1, by + 2, bx + 9, by + 10], fill=(185, 28, 28))
+        d.rectangle([bx + 11, by + 2, bx + 19, by + 10], fill=(255, 255, 255), outline=(150, 150, 150), width=1)
+        d.ellipse([bx + 13, by + 4, bx + 17, by + 8], fill=(185, 28, 28))
+    elif num == "9":
+        # airplane silhouette
+        d.polygon([(bx + 1, by + 7), (bx + 14, by + 4), (bx + 19, by + 4), (bx + 15, by + 7),
+                   (bx + 18, by + 9), (bx + 8, by + 9), (bx + 5, by + 11), (bx + 3, by + 9)],
+                  fill=(30, 42, 74))
+    elif num == "10":
+        # two flag bars: Australia blue, China red
+        d.rectangle([bx + 1, by + 2, bx + 9, by + 10], fill=(29, 78, 216))
+        d.ellipse([bx + 3, by + 4, bx + 7, by + 8], fill=(255, 255, 255))
+        d.rectangle([bx + 11, by + 2, bx + 19, by + 10], fill=(185, 28, 28))
+        d.ellipse([bx + 13, by + 4, bx + 16, by + 7], fill=(250, 204, 21))
+    elif num == "11":
+        # falling chart line
+        d.line([(bx + 1, by + 2), (bx + 7, by + 4), (bx + 13, by + 8), (bx + 19, by + 10)],
+               fill=(185, 28, 28), width=2, joint="curve")
+        d.ellipse([bx + 17, by + 8, bx + 20, by + 11], fill=(185, 28, 28))
+    elif num == "12":
+        # checkered flag
+        d.line([bx + 2, by + 1, bx + 2, by + 11], fill=INK, width=1)
+        for r in range(3):
+            for c in range(3):
+                if (r + c) % 2 == 0:
+                    d.rectangle([bx + 3 + c * 5, by + 1 + r * 3, bx + 7 + c * 5, by + 3 + r * 3], fill=INK)
+        d.rectangle([bx + 3, by + 1, bx + 18, by + 10], outline=INK, width=1)
+    elif num == "13":
+        # cricket bat + ball
+        d.line([bx + 3, by + 11, bx + 14, by + 2], fill=(146, 64, 14), width=3)
+        d.ellipse([bx + 15, by + 8, bx + 19, by + 12], fill=(185, 28, 28))
+
+
 # ---------------------------------------------------------------- build
 def build():
     img = Image.new("RGB", (W, H), PAPER)
@@ -348,7 +429,7 @@ def build():
     hero_h = 232
     hero_top = y
     f_hlabel = font(SANS_B, 13)
-    f_htag = font(SANS_B, 10)
+    f_htag = font(SANS_B, 8)
     f_loc = font(SANS_B, 10)
     f_hhead = font(SERIF_B, 17)
     f_hdeck = font(SANS, 11)
@@ -358,7 +439,9 @@ def build():
         d.rectangle([hx, y, hx + hero_w - 1, y + 23], fill=RED)
         d.text((hx + 8, y + 4), h["label"], font=f_hlabel, fill=(255, 255, 255))
         tw = text_w(h["tag"], f_htag)
-        d.text((hx + hero_w - 8 - tw, y + 6), h["tag"], font=f_htag, fill=(255, 255, 255))
+        tag_left = hx + hero_w - 8 - tw
+        d.text((tag_left, y + 7), h["tag"], font=f_htag, fill=(255, 255, 255))
+        draw_badge(d, tag_left - 8, y + 5, h["badge"])
         ay = y + 23
         if h["art"] == "cop31":
             art_cop31(d, hx, ay, hero_w, 88)
@@ -389,11 +472,13 @@ def build():
     for row in range(2):
         for col in range(5):
             idx = row * 5 + col
-            num, label, loc, head, deck, src = GRID[idx]
+            num, label, loc, head, deck, src, badge = GRID[idx]
             gx = MX + col * (cell_w + cell_gap)
             gy = y + row * row_h
             d.text((gx, gy), num + " · " + label, font=f_glabel, fill=RED_DARK)
+            draw_badge(d, gx + cell_w, gy, badge)
             d.text((gx, gy + 15), loc, font=font(SANS_B, 8), fill=GRAY)
+            draw_grid_picto(d, num, gx + cell_w - 20, gy + 14)
             hy = draw_wrapped(d, gx, gy + 28, head, f_ghead, cell_w, INK, leading=15)
             dy = draw_wrapped(d, gx, hy + 1, deck, f_gdeck, cell_w, INK, leading=12)
             d.text((gx, dy + 2), src, font=f_gsrc, fill=GRAY)
@@ -412,7 +497,7 @@ def build():
     d.text((MX + map_w + 12, y), "ALSO ON SATURDAY 21 NOVEMBER 2026 · 22 MORE STORIES", font=f_sec, fill=INK)
     y += 17
     map_x, map_y = MX, y
-    map_h = 188
+    map_h = 173
     d.rectangle([map_x, map_y, map_x + map_w - 1, map_y + map_h - 1], fill=MAP_OCEAN, outline=MAP_LINE, width=1)
 
     def proj(lon, lat):
@@ -489,6 +574,17 @@ def build():
             d.text((inner, ly), ln, font=f_dc, fill=INK)
         ly += 15
     y += box_h + 6
+
+    # how we checked legend
+    f_hwc_b = font(SANS_B, 9)
+    f_hwc = font(SANS, 9)
+    prefix = "HOW WE CHECKED: "
+    rest = HOW_CHECKED[len(prefix):]
+    lw = text_w(prefix, f_hwc_b) + text_w(rest, f_hwc)
+    lx0 = (W - lw) / 2
+    d.text((lx0, y), prefix, font=f_hwc_b, fill=GRAY)
+    d.text((lx0 + text_w(prefix, f_hwc_b), y), rest, font=f_hwc, fill=GRAY)
+    y += 14
 
     # footer
     f_foot = font(SANS, 10)
